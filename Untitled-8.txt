@@ -1,0 +1,81 @@
+Consumption smoothening
+
+import numpy as np
+import matplotlib.pyplot as plt
+from collections import namedtuple
+
+ConsumptionSmoothing = namedtuple("ConsumptionSmoothing", 
+                        ["R", "g1", "g2", "β_seq", "T"])
+
+def create_consumption_smoothing_model(R=1.05, g1=1, g2=1/2, T=65):
+    β = 1/R
+    β_seq = np.array([β**i for i in range(T+1)])
+    return ConsumptionSmoothing(R, g1, g2, 
+                                β_seq, T)
+def compute_optimal(model, a0, y_seq):
+    R, T = model.R, model.T
+
+    # non-financial wealth
+    h0 = model.β_seq @ y_seq     # since β = 1/R
+
+    # c0
+    c0 = (1 - 1/R) / (1 - (1/R)**(T+1)) * (a0 + h0)
+    c_seq = c0*np.ones(T+1)
+
+    # verify
+    A = np.diag(-R*np.ones(T), k=-1) + np.eye(T+1)
+    b = y_seq - c_seq
+    b[0] = b[0] + a0
+
+    a_seq = np.linalg.inv(A) @ b
+    a_seq = np.concatenate([[a0], a_seq])
+
+    return c_seq, a_seq, h0
+# Financial wealth
+a0 = -2     # such as "student debt"
+
+# non-financial Income process
+y_seq = np.concatenate([np.ones(46), np.zeros(20)])
+
+cs_model = create_consumption_smoothing_model()
+c_seq, a_seq, h0 = compute_optimal(cs_model, a0, y_seq)
+
+print('check a_T+1=0:', 
+      np.abs(a_seq[-1] - 0) <= 1e-8)
+# Sequence Length
+T = cs_model.T
+
+plt.plot(range(T+1), y_seq, label='non-financial income')
+plt.plot(range(T+1), c_seq, label='consumption')
+plt.plot(range(T+2), a_seq, label='financial wealth')
+plt.plot(range(T+2), np.zeros(T+2), '--')
+
+plt.legend()
+plt.xlabel(r'$t$')
+plt.ylabel(r'$c_t,y_t,a_t$')
+plt.show()
+
+RUN*************
+def welfare(model, c_seq):
+    β_seq, g1, g2 = model.β_seq, model.g1, model.g2
+
+    u_seq = g1 * c_seq - g2/2 * c_seq**2
+    return β_seq @ u_seq
+
+print('Welfare:', welfare(cs_model, c_seq))
+
+###############################################################
+
+Explain consumption smoothening of an individual for due to windfall gain and loss/disaster
+
+# Windfall W_0 = 2.5
+y_seq_pos = np.concatenate([np.ones(21), np.array([2.5]), np.ones(24), np.zeros(20)])
+
+plot_cs(cs_model, a0, y_seq_pos)
+****RUN****
+
+# Disaster W_0 = -2.5
+y_seq_neg = np.concatenate([np.ones(21), np.array([-2.5]), np.ones(24), np.zeros(20)])
+
+plot_cs(cs_model, a0, y_seq_neg)
+***RUN***
