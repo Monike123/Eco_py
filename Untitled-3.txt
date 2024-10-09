@@ -1,0 +1,137 @@
+
+
+import matplotlib.pyplot as plt
+import numpy as np
+from numba import jit, float64
+from numba.experimental import jitclass
+import quantecon as qe
+from quantecon.distributions import BetaBinomial
+
+# Set default figure size
+plt.rcParams["figure.figsize"] = (11, 5)
+
+n, a, b = 60, 400, 600  # Default parameters
+q_default = BetaBinomial(n, a, b).pdf()  # Default choice of q
+
+w_min, w_max = 10, 60
+w_default = np.linspace(w_min, w_max, n+1)
+
+fig, ax = plt.subplots()
+ax.plot(w_default, q_default, '-o', label='$q(u(i))$')
+ax.set_xlabel('wages')
+ax.set_ylabel('probabilities')
+ax.legend()
+plt.show()
+
+
+#################################################################
+
+iteration Convergence using Mc Call Model
+
+mccall_data=[
+  ('c', float64),# unemployment compensation
+  ('β', float64),# discount factor # Changed ẞ to β
+  ('w', float64[:]), # array of wage values, w[i]
+  ('q', float64[:]) # array of probabilities
+]
+ 
+@jitclass (mccall_data)
+class McCallModel:
+ 
+  def __init__(self, c=25, β=0.99, w=w_default, q=q_default): # Changed ẞ to β
+    self.c, self.β = c, β # Changed ẞ to β
+    self.w, self.q = w_default, q_default
+  def state_action_values (self, i, v):
+    #The values of state-action pairs.
+   
+    # Simplify names
+    c, β, w, q = self.c, self.β, self.w, self.q # Changed ẞ to β
+    # Evaluate value for each state-action pair
+    # Consider action=accept or reject the current offer
+ 
+    accept=w[i]/(1 - β) # Changed ẞ to β
+    reject = c+β * np.sum(v * q) # Changed ẞ to β
+    return np.array([accept, reject])
+ 
+ 
+ 
+ 
+def plot_value_function_seq(mcm, ax, num_plots=6):
+ 
+    n = len(mcm.w)
+    v =  mcm.w/(1 - mcm.β)
+    v_next = np.empty_like(v)
+    for i in range(num_plots):
+      ax.plot(mcm.w, v,'-' , alpha=0.4, label=f"iterate {1}")
+    # Update guess
+      for j in range(n):
+        v_next[j] = np.max(mcm.state_action_values(j, v))
+      v[:] = v_next # copy contents into v
+    ax.legend(loc='lower right')
+#Vidyalankar School of Information Technology
+mcm = McCallModel()
+fig, ax= plt.subplots()
+ax.set_xlabel('wage')
+ax.set_ylabel('value')
+plot_value_function_seq(mcm, ax)
+plt.show()
+
+
+#################################################################
+
+calculate the reservation wage
+
+import numpy as np
+import matplotlib.pyplot as plt
+from numba import jit
+
+@jit(nopython=True)
+def compute_reservation_wage(mcm, max_iter=500, tol=1e-6):
+    # Simplify names
+    c, β, w, q = mcm.c, mcm.β, mcm.w, mcm.q
+
+    # First compute the value function
+    n = len(w)
+    v = w / (1 - β)
+
+    # Initial guess
+    v_next = np.empty_like(v)
+    j = 0
+    error = tol + 1
+
+    while j < max_iter and error > tol:
+        for i in range(n):
+            v_next[i] = np.max(mcm.state_action_values(i, v))
+        
+        error = np.max(np.abs(v_next - v))
+        v[:] = v_next  # Copy contents into v
+        j += 1
+
+    # Now compute the reservation wage
+    return (1 - β) * (c + β * np.sum(v * q))
+
+# Define grid size and ranges
+grid_size = 25
+R = np.empty((grid_size, grid_size))
+c_vals = np.linspace(10.0, 30.0, grid_size)
+β_vals = np.linspace(0.9, 0.99, grid_size)
+
+# Compute reservation wage for each combination of c and B
+for i, c in enumerate(c_vals):
+    for j, β in enumerate(β_vals):
+        mcm = McCallModel(c=c, β=β)
+        R[i, j] = compute_reservation_wage(mcm)
+
+# Plotting
+fig, ax = plt.subplots()
+cs1 = ax.contourf(c_vals, β_vals, R.T, alpha=0.75)
+ctr1 = ax.contour(c_vals, β_vals, R.T)
+plt.clabel(ctr1, inline=True, fontsize=13)
+plt.colorbar(cs1, ax=ax)
+
+ax.set_title("Reservation Wage")
+ax.set_xlabel("$c$", fontsize=16)
+ax.set_ylabel("$β$", fontsize=16)
+ax.ticklabel_format(useOffset=False)
+
+plt.show()

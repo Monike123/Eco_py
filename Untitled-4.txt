@@ -1,0 +1,169 @@
+consumer surplus
+
+import numpy as np
+import matplotlib.pyplot as plt
+from collections import namedtuple
+fig, ax = plt.subplots()
+consumers = range(1, 11)
+#willingness to pay for each consumer
+wtp=(45, 34, 48, 33, 87, 66, 49, 78, 12, 22)
+price = 25
+ax.bar(consumers, wtp, label="consumer surplus", color="purple", alpha=0.8)
+ax.plot((0, 12), (price, price), lw=2, label="price $p$")
+ax.bar (consumers, [min(w, price) for w in wtp], color="lightpink", alpha=0.6)
+ax.set_xlim(0, 12)
+ax.set_xticks(consumers)
+ax.set_ylabel("willingness to pay, price")
+ax.set_xlabel("consumer, quantity")
+ax.legend()
+plt.show()
+
+
+################################################################
+
+demand curve eq = 10-2q
+
+import matplotlib.pyplot as plt
+import numpy as np
+# Define the range of quantity (q)
+q = np.linspace(0, 5, 100) # You can adjust the range as needed
+# Define the demand function p = 10 - 2q
+p = 10 - 2 * q
+# Create the plot
+plt.figure(figsize=(8, 6))
+plt.plot(q, p, label='Demand Curve: p = 10 - 2q', color='green')
+# Add labels and title
+plt.xlabel('Quantity (q)')
+plt.ylabel('Price (p)')
+plt.title('Demand Curve')
+plt.legend()
+plt.grid(True)
+# Show the plot
+plt.show()
+
+################################################################
+
+change in curve due to increase in ads 
+
+import matplotlib.pyplot as plt
+import numpy as np
+# Define the range of quantity (q)
+q = np.linspace(0, 5, 100) # Adjust the range as needed
+# Define the initial and new demand functions
+p_initial = 10 - 2 * q
+p_new = 12 - 2 * q
+# Create the plot
+plt.figure(figsize=(10, 6))
+# Plot the initial demand curve
+plt.plot(q, p_initial, label='Initial Demand Curve: p = 10 - 2q', color='green')
+# Plot the new demand curve after advertising
+plt.plot(q, p_new, label='New Demand Curve after Advertising: p = 12 - 2q', color='purple', 
+linestyle='--')
+# Add labels and title
+plt.xlabel('Quantity (q)')
+plt.ylabel('Price (p)')
+plt.title('Impact of Advertising on Demand')
+plt.legend()
+plt.grid(True)
+# Show the plot
+plt.show()
+
+################################################################
+
+supply curve eq=10+3q
+
+import matplotlib.pyplot as plt
+import numpy as np
+# Define the range of quantity (q)
+q = np.linspace(0, 5, 100) # Adjust the range as needed
+# Define the initial and new supply functions
+p_initial = 10 + 3 * q
+p_new = 8 + 3 * q
+# Create the plot
+plt.figure(figsize=(10, 6))
+# Plot the initial supply curve
+plt.plot(q, p_initial, label='Initial Supply Curve: p = 10 + 3q', color='pink')
+# Plot the new supply curve after subsidies
+plt.plot(q, p_new, label='New Supply Curve with Subsidies: p = 8 + 3q',color='orange', linestyle='--')
+# Add labels and title
+plt.xlabel('Quantity (q)')
+plt.ylabel('Price (p)')
+plt.title('Impact of Government Subsidies on Supply')
+plt.legend()
+plt.grid(True)
+# Show the plot
+plt.show()
+
+
+################################################################
+
+multiplier theory using python
+
+import numpy as np
+import matplotlib.pyplot as plt
+# Parameters
+initial_investment = 1000
+MPC = 0.8
+num_rounds = 10 # Number of rounds to simulate
+# Calculate the multiplier
+multiplier = 1 / (1 - MPC)
+# Initialize arrays to store results
+rounds = np.arange(num_rounds + 1)
+total_income = np.zeros(num_rounds + 1)
+# Initial investment
+total_income[0] = initial_investment
+# Simulate the multiplier effect
+for i in range(1, num_rounds + 1):
+ # The income in the current round is the MPC of the previous round's income
+ additional_income = MPC * total_income[i - 1]
+ total_income[i] = total_income[i - 1] + additional_income
+# Plot the results
+plt.figure(figsize=(10, 6))
+plt.plot(rounds, total_income, marker='o', linestyle='-', color='purple')
+plt.xlabel('Round')
+plt.ylabel('Total Income')
+plt.title(f'Multiplier Effect Simulation (MPC={MPC})')
+plt.grid(True)
+plt.xticks(rounds)
+plt.show()
+# Print the calculated multiplier
+print(f'Calculated Multiplier: {multiplier:.2f}')
+
+
+################################################################
+
+Changing consumption as a Fraction of income using b = 0.8 and 0.4 and 
+
+import numpy as np
+import matplotlib.pyplot as plt
+# Parameters
+initial_investment = 1000
+num_rounds = 10 # Number of rounds to simulate
+# Define MPCs to compare
+MPCs = [0.8, 0.4]
+colors = ['b', 'r']
+labels = ['MPC = 0.8', 'MPC = 0.4']
+# Initialize plot
+plt.figure(figsize=(12, 8))
+for MPC, color, label in zip(MPCs, colors, labels):
+ # Calculate the multiplier
+ multiplier = 1 / (1 - MPC)
+ 
+ # Initialize arrays to store results
+ total_income = np.zeros(num_rounds + 1)
+ total_income[0] = initial_investment
+ 
+ # Simulate the multiplier effect
+ for i in range(1, num_rounds + 1):
+  additional_income = MPC * total_income[i - 1]
+  total_income[i] = total_income[i - 1] + additional_income
+ # Plot the results
+ plt.plot(total_income, marker='o', linestyle='-', color=color, label=f'{label} (Multiplier: {multiplier:.2f})')
+# Add labels and title
+plt.xlabel('Round')
+plt.ylabel('Total Income')
+plt.title('Impact of Different MPCs on Investment')
+plt.legend()
+plt.grid(True)
+plt.show()
+

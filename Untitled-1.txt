@@ -1,0 +1,75 @@
+consumer graph
+
+import matplotlib.pyplot as plt
+import numpy as np
+from collectios import namedtuple
+fig,ax=plt.subplots()
+consumers=range(1,11)
+wtp=(98,72,41,38,29,21,17,12,11,10)
+price = 25
+ax.bar(consumers,wtp,label="consumer surplus",color="darkorange",alpha=0.8)
+ax.plot((0,12),(price,price),lw=2,label="price$p$")
+ax.bar(consumers,[min(w,price)for w in wtp],color="black",alpha=0.6)
+ax.set_xlim(0,12)
+ax.set_xticks(consumers)
+ax.set_ylabel("Willingness to pay price")
+ax.set_xlabel("consumers,quantity")
+ax.legend()
+plt.show()
+#################################################################
+
+demand curve
+
+import matplotlib.pyplot as plt
+import numpy as np
+ 
+q = np.linspace(0,10,100)
+ 
+p = 20-2*q
+ 
+plt.figure(figsize=(8,6))
+plt.plot(q,p, label='Demand Curve: p = 20 - 2q', color='b')
+plt.title('Demand Curve')
+plt.xlabel('Quantity (q)')
+plt.ylabel('Price (p)')
+plt.grid(True)
+plt.legend()
+plt.show()
+
+#################################################################
+
+change in demand curve
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Generate values for q (quantity)
+q = np.linspace(0, 10, 100)
+
+# Original demand equation: p = 20 - 2q
+p_original = 20 - 2 * q
+
+# Tax increase (for example, tax = 3)
+tax = 3
+
+# New demand curve after tax: p_new = p_original + tax
+p_new = p_original + tax
+
+# Plot the original demand curve
+plt.plot(q, p_original, label='Original Demand: $p = 20 - 2q$', color='blue')
+
+# Plot the new demand curve (with tax)
+plt.plot(q, p_new, label='New Demand (with tax)', color='red', linestyle='--')
+
+# Add labels and title
+plt.xlabel('Quantity (q)')
+plt.ylabel('Price (p)')
+plt.title('Change in Demand due to Tax Increase')
+
+# Add grid, legend, and show the plot
+plt.grid(True)
+plt.legend()
+plt.show()
+
+
+

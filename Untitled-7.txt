@@ -1,0 +1,123 @@
+!pip install quantecon
+RUN
+ import matplotlib.pyplot as plt
+plt.rcParams["figure.figsize"] = (11, 5)  #set default figure size
+import numpy as np
+from quantecon import MarkovChain
+from scipy.stats import norm
+from scipy.optimize import brentq
+from quantecon.distributions import BetaBinomial
+from numba import jit
+RUN
+
+class LakeModel:
+    """
+    Solves the lake model and computes dynamics of unemployment stocks and
+    rates.
+
+    Parameters:
+    ------------
+    λ : scalar
+        The job finding rate for currently unemployed workers
+    α : scalar
+        The dismissal rate for currently employed workers
+    b : scalar
+        Entry rate into the labor force
+    d : scalar
+        Exit rate from the labor force
+
+    """
+    def __init__(self, λ=0.283, α=0.013, b=0.0124, d=0.00822):
+        self.λ, self.α, self.b, self.d = λ, α, b, d
+
+        λ, α, b, d = self.λ, self.α, self.b, self.d
+        self.g = b - d
+        self.A = np.array([[(1-d) * (1-λ) + b,      (1 - d) * α + b],
+                           [        (1-d) * λ,      (1 - d) * (1 - α)]])
+
+        self.A_hat = self.A / (1 + self.g)
+
+
+    def rate_steady_state(self, tol=1e-6):
+        """
+        Finds the steady state of the system :math:`x_{t+1} = \hat A x_{t}`
+
+        Returns
+        --------
+        xbar : steady state vector of employment and unemployment rates
+        """
+        x = np.array([self.A_hat[0, 1], self.A_hat[1, 0]])
+        x /= x.sum()
+        return x
+
+    def simulate_stock_path(self, X0, T):
+        """
+        Simulates the sequence of Employment and Unemployment stocks
+
+        Parameters
+        ------------
+        X0 : array
+            Contains initial values (E0, U0)
+        T : int
+            Number of periods to simulate
+
+        Returns
+        ---------
+        X : iterator
+            Contains sequence of employment and unemployment stocks
+        """
+
+        X = np.atleast_1d(X0)  # Recast as array just in case
+        for t in range(T):
+            yield X
+            X = self.A @ X
+
+    def simulate_rate_path(self, x0, T):
+        """
+        Simulates the sequence of employment and unemployment rates
+
+        Parameters
+        ------------
+        x0 : array
+            Contains initial values (e0,u0)
+        T : int
+            Number of periods to simulate
+
+        Returns
+        ---------
+        x : iterator
+            Contains sequence of employment and unemployment rates
+
+        """
+        x = np.atleast_1d(x0)  # Recast as array just in case
+        for t in range(T):
+            yield x
+            x = self.A_hat @ x
+RUN
+
+lm = LakeModel()
+lm.α
+****RUN****
+lm.A
+****RUN****
+lm = LakeModel(α = 0.03)
+lm.A
+****RUN****
+Q2:
+
+fig, axes = plt.subplots(3, 1, figsize=[10, 9])
+
+axes[0].plot(X_path[:, 0])
+axes[0].set_title('Unemployment')
+
+axes[1].plot(X_path[:, 1])
+axes[1].set_title('Employment')
+
+axes[2].plot(X_path.sum(1))
+axes[2].set_title('Labor force')
+
+for ax in axes:
+    ax.grid()
+
+plt.tight_layout()
+plt.show()
